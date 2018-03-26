@@ -13,12 +13,11 @@ def normalizeRows(x):
     Implement a function that normalizes each row of a matrix to have
     unit length.
     """
-
     ### YOUR CODE HERE
+    x_den = np.linalg.norm(x, axis=1, keepdims=True)
+    x = x / x_den
     ### END YOUR CODE
-
     return x
-
 
 def test_normalize_rows():
     print "Testing normalizeRows..."
@@ -57,7 +56,17 @@ def softmaxCostAndGradient(predicted, target, outputVectors, dataset):
     """
 
     ### YOUR CODE HERE
-    raise NotImplementedError
+
+    vec = np.dot(predicted, np.transpose(outputVectors))
+    y_hat = softmax(vec)            # q1b_softmax
+    y = np.zeros(len(y_hat))
+    y[target] = 1
+
+    cost = -np.log(np.dot(y_hat, np.transpose(y)))   # cross entropy
+    gradPred = y_hat - y
+    grad = np.dot(np.transpose(gradPred), predicted) # matrix n X n
+    #TODO
+
     ### END YOUR CODE
 
     return cost, gradPred, grad
