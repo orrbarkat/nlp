@@ -56,17 +56,15 @@ def softmaxCostAndGradient(predicted, target, outputVectors, dataset):
     """
 
     ### YOUR CODE HERE
+    # TODO - check dim of predicted (we think predicted is a coulmn vector )
+    vec = np.dot(outputVectors, predicted)
+    y_hat = softmax(vec)                                      # q1b_softmax
 
-    vec = np.dot(predicted, np.transpose(outputVectors))
-    y_hat = softmax(vec)            # q1b_softmax
-    y = np.zeros(len(y_hat))
-    y[target] = 1
-
-    cost = -np.log(np.dot(y_hat, np.transpose(y)))   # cross entropy
-    gradPred = y_hat - y
-    grad = np.dot(np.transpose(gradPred), predicted) # matrix n X n
-    #TODO
-
+    cost = -np.log(y_hat[target])                             # cross entropy
+    y_hat[target] -= 1                                        #
+    grad = np.dot(y_hat, predicted.T)                         # n X n matrix. line i is: [gradPred_i * predicted_0, gradPred_i * predicted_1, ... ]
+    gradPred = np.dot(outputVectors, y_hat)                   # 2.b
+    # TODO - check
     ### END YOUR CODE
 
     return cost, gradPred, grad
