@@ -91,7 +91,7 @@ def sgd(f, x0, step, iterations, postprocessing=None, useSaved=False,
         cost, gradient = f(x)
         x = x - step * gradient
         if postprocessing is not None:
-            x = postprocessing(x) #TODO - check if not in place.
+            x = postprocessing(x)
         ### END YOUR CODE
 
         if iter % PRINT_EVERY == 0:
