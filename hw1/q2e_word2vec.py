@@ -56,15 +56,13 @@ def softmaxCostAndGradient(predicted, target, outputVectors, dataset):
     """
 
     ### YOUR CODE HERE
-    # TODO - check dim of predicted (we think predicted is a coulmn vector )
     vec = np.dot(outputVectors, predicted)
     y_hat = softmax(vec)                                      # q1b_softmax
 
     cost = -np.log(y_hat[target])                             # cross entropy
-    y_hat[target] -= 1                                        #
-    grad = np.dot(y_hat, predicted.T)                         # n X n matrix. line i is: [gradPred_i * predicted_0, gradPred_i * predicted_1, ... ]
-    gradPred = np.dot(outputVectors, y_hat)                   # 2.b
-    # TODO - check
+    y_hat[target] -= 1.                                       #
+    grad = np.outer(y_hat, predicted)
+    gradPred = np.dot(outputVectors.T, y_hat)                 # 2.b
     ### END YOUR CODE
 
     return cost, gradPred, grad
@@ -102,7 +100,21 @@ def negSamplingCostAndGradient(predicted, target, outputVectors, dataset,
     indices.extend(getNegativeSamples(target, dataset, K))
 
     ### YOUR CODE HERE
-    raise NotImplementedError
+    grad = np.zeros(outputVectors.shape)
+
+    activation = sigmoid(np.dot(outputVectors[target], predicted))
+    cost = -np.log(activation)
+    gradPred = (activation - 1.) * outputVectors[target]
+    grad[target] = (activation - 1.) * predicted
+
+    for idx in range(1, K+1):
+        sample_idx = indices[idx]
+        sample = outputVectors[sample_idx]
+        activation = sigmoid(-np.dot(sample, predicted))
+        cost -= np.log(activation)
+        gradPred -= (activation - 1.)*sample
+        grad[sample_idx] -= (activation - 1.) * predicted
+
     ### END YOUR CODE
 
     return cost, gradPred, grad
@@ -137,7 +149,16 @@ def skipgram(currentWord, C, contextWords, tokens, inputVectors, outputVectors,
     gradOut = np.zeros(outputVectors.shape)
 
     ### YOUR CODE HERE
-    raise NotImplementedError
+    currentWord_idx = tokens[currentWord]
+    predicted = inputVectors[currentWord_idx]
+    indices = map(lambda word: tokens[word], contextWords)
+    for i in indices:
+        context_cost, context_grad_input, context_grad_output = \
+            word2vecCostAndGradient(predicted, i, outputVectors, dataset)
+
+        cost += context_cost
+        gradIn[currentWord_idx] += context_grad_input
+        gradOut += context_grad_output
     ### END YOUR CODE
 
     return cost, gradIn, gradOut
