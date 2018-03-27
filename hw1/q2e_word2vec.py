@@ -157,7 +157,7 @@ def skipgram(currentWord, C, contextWords, tokens, inputVectors, outputVectors,
             word2vecCostAndGradient(predicted, i, outputVectors, dataset)
 
         cost += context_cost
-        gradIn += context_grad_input
+        gradIn[currentWord_idx] += context_grad_input
         gradOut += context_grad_output
     ### END YOUR CODE
 
