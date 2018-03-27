@@ -15,7 +15,6 @@ def sigmoid(x):
     """
     s = 1 + np.exp(-x)
     s = 1. / s
-
     return s
 
 
@@ -73,5 +72,5 @@ def test_sigmoid():
 
 
 if __name__ == "__main__":
-    test_sigmoid_basic();
+    test_sigmoid_basic()
     test_sigmoid()

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import numpy as np
 import random
+
+import numpy as np
 
 
 # First implement a gradient checker by filling in the following functions
@@ -16,8 +17,8 @@ def gradcheck_naive(f, x):
 
     rndstate = random.getstate()
     random.setstate(rndstate)
-    fx, grad = f(x) # Evaluate function value at original point
-    h = 1e-4        # Do not change this!
+    fx, grad = f(x)  # Evaluate function value at original point
+    h = 1e-4  # Do not change this!
 
     # Iterate over all indexes ix in x to check the gradient.
     it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])
@@ -39,12 +40,12 @@ def gradcheck_naive(f, x):
         x[ix] += h
         random.setstate(rndstate)
         f_plus_h, _ = f(x)
-        x[ix] -= 2*h
+        x[ix] -= 2 * h
         random.setstate(rndstate)
         f_minus_h, _ = f(x)
         x[ix] = x_orig
         diff = f_plus_h - f_minus_h
-        numgrad = diff / (2*h)
+        numgrad = diff / (2 * h)
 
         # Compare gradients
         reldiff = abs(numgrad - grad[ix]) / max(1, abs(numgrad), abs(grad[ix]))
@@ -55,7 +56,7 @@ def gradcheck_naive(f, x):
                 grad[ix], numgrad))
             return
 
-        it.iternext() # Step to next dimension
+        it.iternext()  # Step to next dimension
 
     print("Gradient check passed!")
 
@@ -67,9 +68,9 @@ def sanity_check():
     quad = lambda x: (np.sum(x ** 2), x * 2)
 
     print("Running sanity checks...")
-    gradcheck_naive(quad, np.array(123.456))      # scalar test
-    gradcheck_naive(quad, np.random.randn(3,))    # 1-D test
-    gradcheck_naive(quad, np.random.randn(4,5))   # 2-D test
+    gradcheck_naive(quad, np.array(123.456))  # scalar test
+    gradcheck_naive(quad, np.random.randn(3, ))  # 1-D test
+    gradcheck_naive(quad, np.random.randn(4, 5))  # 2-D test
     print("")
 
 
