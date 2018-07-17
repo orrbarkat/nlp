@@ -108,3 +108,4 @@ share/
 pyvenv.cfg
 include/
 etc/
+NEED_TO_REMOVE.txt

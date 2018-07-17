@@ -11,6 +11,7 @@ import time
 from q2e_word2vec import *
 from q2f_sgd import *
 from q2g_knn import *
+from utils.glove import loadWordVectors
 
 # Reset the random seed to make sure that everyone gets the same results
 random.seed(314)
@@ -36,7 +37,7 @@ wordVectors = np.concatenate(
 wordVectors = sgd(
     lambda vec: word2vec_sgd_wrapper(skipgram, tokens, vec, dataset, C,
                                      negSamplingCostAndGradient),
-    wordVectors, 0.3, 40000, None, True, PRINT_EVERY=10)
+    wordVectors, 0.3, 10, None, True, PRINT_EVERY=10)
 # Note that normalization is not called here. This is not a bug,
 # normalizing during training loses the notion of length.
 
@@ -80,3 +81,12 @@ for key_word in key_words:
     idx = knn(wordVector, inputVectors, 11)
     print "Words related to \"" + key_word + "\": ",  [inv_tokens[i] for i in idx]
 
+print "glove expiriment"
+inputVectors = loadWordVectors(tokens)
+print "glove num of tokens: %d" % len(tokens)
+rows = np.dot(inputVectors, np.ones(inputVectors[0].shape))
+inv_tokens = {v: k for k, v in tokens.iteritems()}
+for key_word in key_words:
+    wordVector = inputVectors[tokens[key_word]]
+    idx = knn(wordVector, inputVectors, 11)
+    print "Words related to \"" + key_word + "\": ",  [inv_tokens[i] for i in idx]
