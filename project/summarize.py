@@ -1,12 +1,13 @@
 import json
 import sys
 
-from gensim.summarization.summarizer import summarize
 from newsroom import jsonl
+
+from project.summarizers.factory import summarizer_factory
 
 
 def evaluate(args):
-    WORD_COUNT = 50
+    summarizer = summarizer_factory(args.model_class)
 
     with jsonl.open(args.data, gzip=True) as dataset:
         for i, entry in enumerate(dataset):
@@ -14,7 +15,7 @@ def evaluate(args):
                 break
 
             try:
-                summary = summarize(entry["text"], word_count=WORD_COUNT)
+                summary = summarizer.summarize(entry["text"])
 
             except ValueError:
                 # Handles "input must have more than one sentence"
@@ -32,9 +33,10 @@ if __name__ == '__main__':
     command_parser = subparsers.add_parser('evaluate', help='', )
     command_parser.add_argument('-d', '--data', type=str, default="data/dev.data",
                                 help="Evaluation data")
-    command_parser.add_argument('-n', '--num-texts', type=str, default="data/dev.data",
+    command_parser.add_argument('-n', '--num-texts', type=int,
                                 help="Evaluation data")
-    command_parser.add_argument('-m', '--model-class', help="module that should summarize")
+    command_parser.add_argument('-m', '--model-class', choices=["TextRank"], default="TextRank",
+                                help="module that should summarize")
     command_parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout, help="Training data")
     command_parser.add_argument('-v', '--verbose', action='store_true', default=False,
                                 help='Display prediction probabilities')
