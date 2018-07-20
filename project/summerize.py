@@ -32,8 +32,7 @@ if __name__ == '__main__':
     command_parser = subparsers.add_parser('evaluate', help='', )
     command_parser.add_argument('-d', '--data', type=str, default="data/dev.data",
                                 help="Evaluation data")
-    command_parser.add_argument('-n', '--num-texts', type=str, default="data/dev.data",
-                                help="Evaluation data")
+    command_parser.add_argument('-n', '--num-texts', type=int, help="process only n records")
     command_parser.add_argument('-m', '--model-class', help="module that should summarize")
     command_parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout, help="Training data")
     command_parser.add_argument('-v', '--verbose', action='store_true', default=False,
