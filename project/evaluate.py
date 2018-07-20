@@ -1,8 +1,19 @@
 from sumeval.metrics.rouge import RougeCalculator
 import sys, json
 from newsroom import jsonl
+import argparse
 
-def calc_rouge(machine_summery, reference_summery, debugPrint = False):
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+def calc_rouge(machine_summery, reference_summery, debug_print = False):
     rouge = RougeCalculator(stopwords=True, lang="en")
 
     rouge_1 = rouge.rouge_n(
@@ -19,75 +30,76 @@ def calc_rouge(machine_summery, reference_summery, debugPrint = False):
         summary=machine_summery,
         references=reference_summery)
 
-    if debugPrint:
-        print("ROUGE-1: {}, ROUGE-2: {}, ROUGE-L: {}".format(
+    if debug_print:
+        print("current sentences results:\nROUGE-1: {}, ROUGE-2: {}, ROUGE-L: {}".format(
             rouge_1, rouge_2, rouge_l
         ).replace(", ", "\n"))
 
-    return tuple(rouge_1, rouge_2, rouge_l)
+    return rouge_1, rouge_2, rouge_l
 
-def calc_rouge_vec(machine_summery, reference_summery, debugPrint = False):
-    rouge = RougeCalculator(stopwords=True, lang="en")
-    ans = []
-    for summery, reference in zip(machine_summery, reference_summery):
-        rouge_1 = rouge.rouge_n(
-            summary=summery,
-            references=reference,
-            n=1)
 
-        rouge_2 = rouge.rouge_n(
-            summary=summery,
-            references=reference,
-            n=2)
+def print_sentences(j_ref_line, j_sum_line):
+    print("")
+    print("machine made: ")
+    print(j_sum_line)
+    print("")
+    print("reference summery was:")
+    print(j_ref_line)
+    print("")
+    print("...")
 
-        rouge_l = rouge.rouge_l(
-            summary=summery,
-            references=reference)
 
-        if debugPrint:
-            print("ROUGE-1: {}, ROUGE-2: {}, ROUGE-L: {}".format(
-                rouge_1, rouge_2, rouge_l
-            ).replace(", ", "\n"))
+def apply_rouge(original_dataset_file, sum_line, verbose):
 
-        ans.append(tuple(rouge_1, rouge_2, rouge_l))
-    return ans
+    rouge_1 = 0
+    rouge_2 = 0
+    rouge_l = 0
+    count = 0
+
+    for index, entry in enumerate(original_dataset_file):  # loop over sentences
+        j_ref_line = entry["summary"]
+        j_sum_line = json.loads(sum_line[index])
+
+        if (j_ref_line is None) or (j_sum_line is None): # line count mismatch error handler
+            print(bcolors.WARNING + "PROBLEM: summery file and reference file line count mismatch."
+                                    " \nreturning results up to this point (line #" + str(index) + ")\n" + bcolors.ENDC)
+            break
+
+        if verbose:  # print sentences for extra information
+            print_sentences(j_ref_line, j_sum_line)
+
+        results = calc_rouge(j_sum_line, j_ref_line, verbose)
+
+        rouge_1 += results[0]
+        rouge_2 += results[1]
+        rouge_l += results[2]
+        count += 1
+
+    return "ROUGE-1: {},  ROUGE-2: {},  ROUGE-L: {}".format(
+        rouge_1 / count, rouge_2 / count, rouge_l / count  # average
+    ).replace(", ", "\n")
 
 
 def eval(args):  # main evaluation function
 
-    #sum_file_name = str(sys.argv[1])
-
-    #ref_file_name = str(sys.argv[2])
-
-    #if len(sys.argv) > 3:
-    #    output_file_name = sys.argv[3]
-
     sum_lines_file = args.input
     ref_file_name = args.data
+    verbose = args.verbose
 
     ##
     with jsonl.open(ref_file_name, gzip=True) as original_dataset_file:
         sum_line = sum_lines_file.readlines()
-        for index, entry in enumerate(original_dataset_file):
-            j_ref_line = entry["summary"]
-            j_sum_line = json.loads(sum_line[index])
 
-            if args.verbose == True:  # print sentences for extra information
-                print("")
-                print("machine made: ")
-                print(j_sum_line)
-                print("")
-                print("reference summery was:")
-                print(j_ref_line)
-                print("")
-                print("...")
+        # Rouge
+        if args.model == "rouge":
+            result_msg = apply_rouge(original_dataset_file, sum_line, verbose)
 
+        # Else
+
+        print("Evaluation method:", str(args.model), "\n\nResults are:\n", result_msg, file=args.output, flush=True)
 
 
 if __name__ == '__main__':
-
-    ## new
-    import argparse
 
     parser = argparse.ArgumentParser(description='evaluate summarise')
     subparsers = parser.add_subparsers()
@@ -99,7 +111,7 @@ if __name__ == '__main__':
                                 help="evaluation output file")
     command_parser.add_argument('-i', '--input', type=argparse.FileType('r'), default="summarise.txt",
                                 help="summarise input file (output of the summary part)")
-    command_parser.add_argument('-m', '--model-class', choices=["rouge"], default="rouge",
+    command_parser.add_argument('-m', '--model', choices=["rouge"], default="rouge",
                                 help="module that should evaluate the resulting summaries")
     command_parser.add_argument('-v', '--verbose', action='store_true', default=False,
                                 help='Display prediction probabilities')
