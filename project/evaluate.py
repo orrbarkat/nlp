@@ -49,20 +49,24 @@ def print_sentences(j_ref_line, j_sum_line):
     print("...")
 
 
-def apply_rouge(original_dataset_file, sum_line, verbose):
+def apply_rouge(sum_line, verbose):
 
     rouge_1 = 0
     rouge_2 = 0
     rouge_l = 0
     count = 0
 
-    for index, entry in enumerate(original_dataset_file):  # loop over sentences
-        j_ref_line = entry["summary"]
-        j_sum_line = json.loads(sum_line[index])
+    # for index, entry in enumerate(original_dataset_file):  # loop over sentences
+    for i in range(int(len(sum_line) / 2)):
+        j_sum_line = json.loads(sum_line[2*i])
+        j_ref_line = json.loads(sum_line[2*i + 1])
 
-        if (j_ref_line is None) or (j_sum_line is None): # line count mismatch error handler
+        if j_sum_line is None:
+            break
+
+        if j_ref_line is None: # line count mismatch error handler
             print(bcolors.WARNING + "PROBLEM: summery file and reference file line count mismatch."
-                                    " \nreturning results up to this point (line #" + str(index) + ")\n" + bcolors.ENDC)
+                                " \nreturning results up to this point (line #" + str(count + 1) + ")\n" + bcolors.ENDC)
             break
 
         if verbose:  # print sentences for extra information
@@ -87,16 +91,17 @@ def eval(args):  # main evaluation function
     verbose = args.verbose
 
     ##
-    with jsonl.open(ref_file_name, gzip=True) as original_dataset_file:
-        sum_line = sum_lines_file.readlines()
+    # with jsonl.open(ref_file_name, gzip=True) as original_dataset_file:
 
-        # Rouge
-        if args.model == "rouge":
-            result_msg = apply_rouge(original_dataset_file, sum_line, verbose)
+    sum_line = sum_lines_file.readlines()
 
-        # Else
+    # Rouge
+    if args.model == "rouge":
+        result_msg = apply_rouge(sum_line, verbose)
 
-        print("Evaluation method:", str(args.model), "\n\nResults are:\n", result_msg, file=args.output, flush=True)
+    # Else
+
+    print("Evaluation method:", str(args.model), "\n\nResults are:\n", result_msg, file=args.output, flush=True)
 
 
 if __name__ == '__main__':

@@ -16,13 +16,14 @@ def evaluate(args):
 
             try:
                 summary = summarizer.summarize(entry["text"])
+                ref_summery = entry["summary"]
 
             except ValueError:
                 # Handles "input must have more than one sentence"
                 summary = entry["text"]
 
             print(json.dumps(summary), file=args.output, flush=True)
-
+            print(json.dumps(ref_summery), file=args.output, flush=True)
 
 if __name__ == '__main__':
     import argparse
