@@ -1,6 +1,6 @@
 from gensim.summarization.summarizer import summarize as textrank
 
-from project.summarizers.base import Summarizer
+from summarizers.base import Summarizer
 
 
 class TextRank(Summarizer):

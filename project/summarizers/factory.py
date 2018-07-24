@@ -1,5 +1,5 @@
-from project.summarizers.fast_abs_rl import FastAbsRl
-from project.summarizers.textrank import TextRank
+from summarizers.fast_abs_rl import FastAbsRl
+from summarizers.textrank import TextRank
 
 
 def summarizer_factory(model_class):

@@ -1,4 +1,4 @@
-from project.summarizers.base import Summarizer
+from summarizers.base import Summarizer
 
 
 class FastAbsRl(Summarizer):

@@ -3,7 +3,7 @@ import sys
 
 from newsroom import jsonl
 
-from project.summarizers.factory import summarizer_factory
+from summarizers.factory import summarizer_factory
 
 
 def evaluate(args):
