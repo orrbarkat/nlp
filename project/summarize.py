@@ -21,9 +21,8 @@ def evaluate(args):
             except ValueError:
                 # Handles "input must have more than one sentence"
                 summary = entry["text"]
+            print(json.dumps({"sum":summary, "ref":ref_summery}), file=args.output, flush=True)
 
-            print(json.dumps(summary), file=args.output, flush=True)
-            print(json.dumps(ref_summery), file=args.output, flush=True)
 
 if __name__ == '__main__':
     import argparse
@@ -36,7 +35,7 @@ if __name__ == '__main__':
                                 help="Evaluation data")
     command_parser.add_argument('-n', '--num-texts', type=int,
                                 help="Evaluation data")
-    command_parser.add_argument('-m', '--model-class', choices=["TextRank"], default="TextRank",
+    command_parser.add_argument('-m', '--model-class', choices=["TextRank","Lede3"], default="TextRank",
                                 help="module that should summarize")
     command_parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout, help="Training data")
     command_parser.add_argument('-v', '--verbose', action='store_true', default=False,

@@ -1,7 +1,7 @@
 from sumeval.metrics.rouge import RougeCalculator
 import sys, json
-from newsroom import jsonl
 import argparse
+
 
 class bcolors:
     HEADER = '\033[95m'
@@ -12,6 +12,7 @@ class bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+
 
 def calc_rouge(machine_summery, reference_summery, debug_print = False):
     rouge = RougeCalculator(stopwords=True, lang="en")
@@ -46,7 +47,6 @@ def print_sentences(j_ref_line, j_sum_line):
     print("reference summery was:")
     print(j_ref_line)
     print("")
-    print("...")
 
 
 def apply_rouge(sum_line, verbose):
@@ -56,20 +56,22 @@ def apply_rouge(sum_line, verbose):
     rouge_l = 0
     count = 0
 
-    # for index, entry in enumerate(original_dataset_file):  # loop over sentences
-    for i in range(int(len(sum_line) / 2)):
-        j_sum_line = json.loads(sum_line[2*i])
-        j_ref_line = json.loads(sum_line[2*i + 1])
+    for i, entry in enumerate(sum_line):
+        entry = json.loads(entry)
+
+        j_sum_line = entry["sum"]
+        j_ref_line = entry["ref"]
 
         if j_sum_line is None:
-            break
+            print(bcolors.WARNING + "PROBLEM: empty summary in line #" + str(i + 1) + ")\n" + bcolors.ENDC)
+            continue
 
-        if j_ref_line is None: # line count mismatch error handler
-            print(bcolors.WARNING + "PROBLEM: summery file and reference file line count mismatch."
-                                " \nreturning results up to this point (line #" + str(count + 1) + ")\n" + bcolors.ENDC)
-            break
+        if j_ref_line is None:
+            print(bcolors.WARNING + "PROBLEM: empty reference summary in line #" + str(i + 1) + ")\n" + bcolors.ENDC)
+            continue
 
         if verbose:  # print sentences for extra information
+            print("...\n\non iteration " + str(i+1) + ":")
             print_sentences(j_ref_line, j_sum_line)
 
         results = calc_rouge(j_sum_line, j_ref_line, verbose)
@@ -85,23 +87,15 @@ def apply_rouge(sum_line, verbose):
 
 
 def eval(args):  # main evaluation function
-
-    sum_lines_file = args.input
-    ref_file_name = args.data
+    sum_line = args.input.readlines()
     verbose = args.verbose
-
-    ##
-    # with jsonl.open(ref_file_name, gzip=True) as original_dataset_file:
-
-    sum_line = sum_lines_file.readlines()
 
     # Rouge
     if args.model == "rouge":
         result_msg = apply_rouge(sum_line, verbose)
 
     # Else
-
-    print("Evaluation method:", str(args.model), "\n\nResults are:\n", result_msg, file=args.output, flush=True)
+    print(bcolors.OKGREEN + "\nEvaluation method:", str(args.model), "\n\nResults are:\n", result_msg + bcolors.ENDC, file=args.output, flush=True)
 
 
 if __name__ == '__main__':
